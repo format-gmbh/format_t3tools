@@ -138,7 +138,7 @@ class tx_formatt3tools_dbcheck extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
         $mail->setFrom($from)->setSubject($subject)->setBody($message);
 		
-		$arrAdr = explode(',', $this->notificationEmail);
+		$arrAdr = explode(',', $this->getNotificationEmail());
 		foreach($arrAdr as $adr){
             $mail->setTo($adr);
             $mail->send();
@@ -146,5 +146,20 @@ class tx_formatt3tools_dbcheck extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	}
 
     
+    /**
+     * Returns the most important properties of the task as a
+     * slash separated string that will be displayed in the scheduler module.
+     *
+     * @return string
+     */
+    public function getAdditionalInformation()
+    {
+        $additionalInformation = [];
+
+        $additionalInformation[] = 'TO: ' . $this->getNotificationEmail();
+        $additionalInformation[] = 'db size: ' . $this->getMaxDbSize() . ' MB';
+
+        return implode(' / ', $additionalInformation);
+    }
 }
 
