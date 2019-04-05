@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>module</type>
+		<description>Language labels for the status reports</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+      <label index="dbchecktask.meta.name">DB-Check</label>
+      <label index="dbchecktask.meta.description">This Task checks the size of database.</label>
+      <label index="dbchecktask.email_subject">%s: size of the database</label>
+      <label index="dbchecktask.email_message">This mail sent format_t3tools.</label>
+      <label index="dbchecktask.field.notificationEmail">Notification email addresses (comma separated)</label>
+      <label index="dbchecktask.field.notificationEmail.invalid">Empty or invalid notification email address(es).</label>
+      <label index="dbchecktask.field.maxDbSize">Größe der Datenbank (in MByte), ab der eine eMail versendet wird.</label>
+      <label index="dbchecktask.field.maxDbSize.invalid">Größe der Datenbank falsch: Wert muß zwischen 1 und 99999 liegen.</label>
+		</languageKey>
+    <languageKey index="de" type="array">
+      <label index="dbchecktask.meta.name">DB-Check</label>
+      <label index="dbchecktask.meta.description">Dieser Task überprüft die Größe der Datenbank und schickt bei Überschreiten einer vorgegebenen Größe eine Mail.</label>
+      <label index="dbchecktask.email_subject">%s: Groesse der Datenbank</label>
+      <label index="dbchecktask.email_message">Diese Mail sendete format_t3tools.</label>
+      <label index="dbchecktask.field.notificationEmail">Empfänger eMail-Adressen (mit Komma getrennt)</label>
+      <label index="dbchecktask.field.notificationEmail.invalid">Leere oder ungültige eMail-Adresse(n).</label>
+      <label index="dbchecktask.field.maxDbSize">Größe der Datenbank (in MByte), ab der eine eMail versendet wird.</label>
+      <label index="dbchecktask.field.maxDbSize.invalid">Größe der Datenbank falsch: Wert muß zwischen 1 und 99999 liegen.</label>
+    </languageKey>
+	</data>
+</T3locallang>
