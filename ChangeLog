@@ -1,4 +1,7 @@
 2019-04-07 Andreas Kessel  <typo3-dev@formatsoft.de>
+	* 2.0.1 Extension only suitable for TYPO3 >= 9.5
+
+2019-04-07 Andreas Kessel  <typo3-dev@formatsoft.de>
 	* 2.0.0 Revision of the entire code
 
 2019-04-05 Andreas Kessel  <typo3-dev@formatsoft.de>
