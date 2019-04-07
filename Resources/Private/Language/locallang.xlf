@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0" xmlns:t3="http://typo3.org/schemas/xliff">
+	<file source-language="en" datatype="plaintext" original="messages" date="2019-04-06T7:00:00Z" product-name="format_t3tools">
+		<header/>
+		<body>
+			<trans-unit id="tasks.dbcheck.name">
+				<source>Database size check</source>
+			</trans-unit>
+			<trans-unit id="tasks.dbcheck.description">
+				<source>This Task checks the size of database.</source>
+			</trans-unit>
+			<trans-unit id="tasks.email.subject">
+				<source>%s: size of the database</source>
+			</trans-unit>
+			<trans-unit id="tasks.email.message">
+				<source>This mail sent EXT:format_t3tools.</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.notificationEmail">
+				<source>Notification email addresses (comma separated)</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.notificationEmail.invalid">
+				<source>Empty or invalid notification email address(es).</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.maxDbSize">
+				<source>Size of the database (in MByte) from which an email is sent.</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.maxDbSize.invalid">
+				<source>The size of the database must be greater than 0.</source>
+			</trans-unit>
+			<trans-unit id="tasks.">
+				<source></source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>
+
