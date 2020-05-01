@@ -14,6 +14,7 @@ namespace Formatsoft\FormatT3tools\Task;
  */
 
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
@@ -25,7 +26,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 * @package  TYPO3
 * @subpackage	tx_formatt3tools
 */
-class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
+class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
     /**
      * Default language file of the extension
@@ -47,7 +48,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      *
      * @var int
      */
-	protected $maxDbSize = 1;
+	protected $maxLogSize = 1;
     
 
     
@@ -61,18 +62,28 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	function execute() {
 		
         $gesamt = 0;
-        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionByName('Default');
-        $statement = $connection->query('SHOW TABLE STATUS');
-        
-        while ($row = $statement->fetch()) {
-            $summe = $row["Index_length"] + $row["Data_length"];
-            $gesamt += $summe;
+        $dirname = Environment::getPublicPath() . '/typo3temp/var/log';
+
+        if (!is_dir($dirname)) {
+            $this->sendNotificationEmail("The file $dirname does not exists", []);;
+            return false;
+        }
+
+        $arrLogfiles = array_diff(scandir($dirname), ['..', '.']);
+        $arrFileinfo = [];
+        foreach ($arrLogfiles as $logfile) {
+            $size = filesize($dirname . '/' . $logfile);
+            $gesamt += $size;
+            $arrFileinfo[] = [
+                'name' => $logfile,
+                'size' => $size
+            ];
         }
 
         $gesamtMByte = round($gesamt / (1024 * 1024),1);
 
-        if($gesamtMByte > $this->getMaxDbSize()){
-          $this->sendNotificationEmail($gesamtMByte.' MByte');
+        if($gesamtMByte > $this->getMaxLogSize()){
+          $this->sendNotificationEmail($gesamtMByte.' MByte', $arrFileinfo);
         } 
 
 		return true;
@@ -85,18 +96,20 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @return	string	Notification email address.
 	 */
-	public function getNotificationEmail() {
+	public function getNotificationEmail(): ?string
+    {
 		return $this->notificationEmail;
 	}
 	
 	
 	/**
-	 * Gets the maxDbSize.
+	 * Gets the maxLogSize.
 	 *
-	 * @return	int	maxDbSize.
+	 * @return	int	$maxLogSize.
 	 */
-	public function getMaxDbSize() {
-		return intval($this->maxDbSize);
+	public function getMaxLogSize(): int
+    {
+		return (int)$this->maxLogSize;
 	}
 	
 	
@@ -114,29 +127,30 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
 
 	/**
-	 * Sets the maxDbSize.
+	 * Sets the maxLogSize.
 	 *
-	 * @param	int	$maxDbSize 
+	 * @param	int	$maxLogSize
 	 */
-	public function setMaxDbSize($maxDbSize) {
-		$this->maxDbSize = (int)$maxDbSize;
+	public function setMaxLogSize($maxLogSize) {
+		$this->maxLogSize = (int)$maxLogSize;
 	}
 
 
 
 
 
-    /**
-     * Sends a notification email, reporting size of database
+	/**
+     * Sends a notification email, reporting size of log files in typo3temp/var/log
      *
-     * @param string $groesse
-     */
-	protected function sendNotificationEmail($groesse) {
+     * @param string $groesse Gesamtgröße aller Log-Files
+     * @param array $arrFileinfo Array mit Dateinamen und Größen
+	 */
+	protected function sendNotificationEmail($groesse, $arrFileinfo) {
 
         $versionInformation = GeneralUtility::makeInstance(Typo3Version::class);
 
 		$subject = sprintf(
-            $this->getLanguageService()->sL($this->languageFile . ':tasks.email.subject'),
+            $this->getLanguageService()->sL($this->languageFile . ':tasks.logsizecheck.email.subject'),
 			$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']
 		);
 		$subject.= ': '.$groesse;
@@ -147,6 +161,15 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 			''
 		);
 		$message.= CRLF . CRLF;
+		foreach ($arrFileinfo as $file) {
+		    if($file['name'] !== '.htaccess') {
+                $message.= substr($file['name'], 0 , 9) . '..... ';
+                $message.= round($file['size'] / (1024 * 1024),1) . ' MB'. CRLF;
+            }
+        }
+        $message.= CRLF . CRLF;
+        //$message.= print_r($arrFileinfo, true);
+        //$message.= CRLF . CRLF;
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
         
@@ -177,7 +200,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         $additionalInformation = [];
 
         $additionalInformation[] = 'TO: ' . $this->getNotificationEmail();
-        $additionalInformation[] = 'db size: ' . $this->getMaxDbSize() . ' MB';
+        $additionalInformation[] = 'Log files size: ' . $this->getMaxLogSize() . ' MB';
 
         return implode(' / ', $additionalInformation);
     }

@@ -26,7 +26,7 @@ use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
  * This class provides Scheduler Additional Field plugin implementation
  * 
  */
-class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider {
+class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider {
     
     /**
      * Default language file of the extension
@@ -41,13 +41,13 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
 	 * @var	array
 	 */
 	protected $fields = ['notificationEmail',
-                         'maxDbSize'];
+                         'maxLogSize'];
 
     /**
      * Render additional information fields within the scheduler backend.
      *
      * @param array $taskInfo Array information of task to return
-     * @param DbcheckTask|null $task The task object being edited. Null when adding a task!
+     * @param LogsizecheckTask|null $task The task object being edited. Null when adding a task!
      * @param SchedulerModuleController $schedulerModule Reference to the BE module of the Scheduler
      * @return array Additional fields
      * @see AdditionalFieldProviderInterface->getAdditionalFields($taskInfo, $task, $schedulerModule)
@@ -59,7 +59,7 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
         
         if (empty($taskInfo['notificationEmail'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['notificationEmail'] = $taskInfo['dbcheck']['notificationEmail'];
+                $taskInfo['notificationEmail'] = $taskInfo['logsizecheck']['notificationEmail'];
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
             } else {
@@ -67,26 +67,26 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
             }
         }
 
-        if (empty($taskInfo['maxDbSize'])) {
+        if (empty($taskInfo['maxLogSize'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['maxDbSize'] = $taskInfo['dbcheck']['maxDbSize'];
+                $taskInfo['maxLogSize'] = $taskInfo['logsizecheck']['maxLogSize'];
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
-                $taskInfo['maxDbSize'] = $task->getMaxDbSize();
+                $taskInfo['maxLogSize'] = $task->getMaxLogSize();
             } else {
-                $taskInfo['maxDbSize'] = $task->getMaxDbSize();
+                $taskInfo['maxLogSize'] = $task->getMaxLogSize();
             }
         }
 
 		foreach ($this->fields as $field) {
             $fieldId = 'task_'.$field;
-            $fieldCode = '<input class="form-control" type="text"  name="tx_scheduler[dbcheck]['.$field.']" '
+            $fieldCode = '<input class="form-control" type="text"  name="tx_scheduler[logsizecheck]['.$field.']" '
             . 'id="'
             . $fieldId
             . '" value="'
             . htmlspecialchars($taskInfo[$field])
             . '">';
             $label = $lang->sL($this->languageFile . ':tasks.validate.'.$field);
-            $label = BackendUtility::wrapInHelp('dbcheck', $fieldId, $label);
+            $label = BackendUtility::wrapInHelp('logsizecheck', $fieldId, $label);
             $additionalFields[$fieldId] = [
                 'code' => $fieldCode,
                 'label' => $label
@@ -109,11 +109,11 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
     public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule) {
         $isValid = true;
         $lang = $this->getLanguageService();
-        if (!empty($submittedData['dbcheck']['notificationEmail'])) {
-            if (strpos($submittedData['dbcheck']['notificationEmail'], ',') !== false) {
-                $notificationEmailList = GeneralUtility::trimExplode(',', $submittedData['dbcheck']['notificationEmail']);
+        if (!empty($submittedData['logsizecheck']['notificationEmail'])) {
+            if (strpos($submittedData['logsizecheck']['notificationEmail'], ',') !== false) {
+                $notificationEmailList = GeneralUtility::trimExplode(',', $submittedData['logsizecheck']['notificationEmail']);
             } else {
-                $notificationEmailList = GeneralUtility::trimExplode(LF, $submittedData['dbcheck']['notificationEmail']);
+                $notificationEmailList = GeneralUtility::trimExplode(LF, $submittedData['logsizecheck']['notificationEmail']);
             }
             foreach ($notificationEmailList as $emailAdd) {
                 if (!GeneralUtility::validEmail($emailAdd)) {
@@ -126,10 +126,10 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
             }
         }
 
-        if ($submittedData['dbcheck']['maxDbSize'] <= 0) {
+        if ($submittedData['logsizecheck']['maxLogSize'] <= 0) {
             $isValid = false;
             $this->addMessage(
-                $lang->sL($this->languageFile . ':tasks.validate.maxDbSize.invalid'),
+                $lang->sL($this->languageFile . ':tasks.validate.maxLogSize.invalid'),
                 FlashMessage::ERROR
             );
         }
@@ -146,9 +146,9 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
      * @param AbstractTask $task Reference to the current task object
      */
     public function saveAdditionalFields(array $submittedData, AbstractTask $task) {
-        /** @var DbcheckTask $task */
-        $task->setNotificationEmail($submittedData['dbcheck']['notificationEmail']);
-        $task->setMaxDbSize($submittedData['dbcheck']['maxDbSize']);
+        /** @var LogsizecheckTask $task */
+        $task->setNotificationEmail($submittedData['logsizecheck']['notificationEmail']);
+        $task->setMaxLogSize($submittedData['logsizecheck']['maxLogSize']);
     }
 
 

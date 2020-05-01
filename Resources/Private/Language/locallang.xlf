@@ -30,6 +30,17 @@
 			<trans-unit id="tasks.">
 				<source></source>
 			</trans-unit>
+
+			<trans-unit id="tasks.logsizecheck.name">
+				<source>Log files size check</source>
+			</trans-unit>
+			<trans-unit id="tasks.logsizecheck.description">
+				<source>This Task checks the size of all files in typo3temp/var/log.</source>
+			</trans-unit>
+			<trans-unit id="tasks.logsizecheck.email.subject">
+				<source>%s: size of all log-files</source>
+			</trans-unit>
+
 		</body>
 	</file>
 </xliff>

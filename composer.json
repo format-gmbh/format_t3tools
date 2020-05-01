@@ -26,7 +26,6 @@
 		}
 	},
     "replace": {
-        "format_t3tools": "self.version",
         "typo3-ter/format_t3tools": "self.version"
     },
     "extra": {

@@ -27,6 +27,16 @@
             <trans-unit id="tasks.validate.maxDbSize.invalid">
                 <target>Größe der Datenbank muß größer 0 sein.</target>
             </trans-unit>
+
+            <trans-unit id="tasks.logsizecheck.name">
+                <target>Prüfung der Größe aller Log-Dateien</target>
+            </trans-unit>
+            <trans-unit id="tasks.logsizecheck.description">
+                <target>Dieser Task prüft die Größe aller Log-Dateien in typo3temp/var/log.</target>
+            </trans-unit>
+            <trans-unit id="tasks.logsizecheck.email.subject">
+                <target>%s: Größe aller Log-Dateien</target>
+            </trans-unit>
             <trans-unit id="tasks.">
                 <target></target>
             </trans-unit>
