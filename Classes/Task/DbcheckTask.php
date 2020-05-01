@@ -13,6 +13,8 @@ namespace Formatsoft\FormatT3tools\Task;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 
@@ -131,6 +133,8 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 */
 	protected function sendNotificationEmail($groesse) {
 
+        $versionInformation = GeneralUtility::makeInstance(Typo3Version::class);
+
 		$subject = sprintf(
             $this->getLanguageService()->sL($this->languageFile . ':tasks.email.subject'),
 			$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']
@@ -148,8 +152,13 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         
         /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
-        $mail->setFrom($from)->setSubject($subject)->setBody($message);
-		
+
+        if ($versionInformation->getMajorVersion() === 10) {
+            $mail->setFrom($from)->setSubject($subject)->text($message);
+        } else {
+            $mail->setFrom($from)->setSubject($subject)->setBody($message);
+        }
+
 		$arrAdr = explode(',', $this->getNotificationEmail());
 		foreach($arrAdr as $adr){
             $mail->setTo($adr);
@@ -172,16 +181,16 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
         return implode(' / ', $additionalInformation);
     }
-    
-    
-    
+
+
+
     /**
-     * @return LanguageService
+     * @return LanguageService|null
      */
-    protected function getLanguageService()
+    protected function getLanguageService(): ?LanguageService
     {
-        return $GLOBALS['LANG'];
+        return $GLOBALS['LANG'] ?? null;
     }
-    
+
 }
 

@@ -1,3 +1,7 @@
+2020-05-01 Andreas Kessel  <typo3-dev@formatsoft.de>
+	* 2.1.0 Compatibility update for TYPO3 CMS 10.4
+        => Important: After updating the extension from version 1.x to 2.x please delete the old Scheduler Task and create a new one.
+
 2019-04-08 Andreas Kessel  <typo3-dev@formatsoft.de>
 	* 2.0.2 only for update hint for upload to TER added
             => Important: After updating the extension from version 1.x to 2.x please delete the old Scheduler Task and create a new one.
