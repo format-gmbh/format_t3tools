@@ -163,13 +163,13 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 		$message.= CRLF . CRLF;
 		foreach ($arrFileinfo as $file) {
 		    if($file['name'] !== '.htaccess') {
+		        // Only send shortened file names by mail.
                 $message.= substr($file['name'], 0 , 9) . '..... ';
+                // Size of the file in MByte
                 $message.= round($file['size'] / (1024 * 1024),1) . ' MB'. CRLF;
             }
         }
         $message.= CRLF . CRLF;
-        //$message.= print_r($arrFileinfo, true);
-        //$message.= CRLF . CRLF;
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
         

@@ -1,3 +1,6 @@
+2020-05-02 Andreas Kessel  <typo3-dev@formatsoft.de>
+	* 2.2.1 comments and cosmetics
+
 2020-05-01 Andreas Kessel  <typo3-dev@formatsoft.de>
 	* 2.2.0 Added check of the size of all log files
         => Important: After updating the extension from version 1.x to 2.x please delete the old Scheduler Task and create a new one.
