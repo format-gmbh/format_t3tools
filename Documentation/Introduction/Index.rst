@@ -13,8 +13,11 @@ Introduction
 What does it do?
 ================
 
-Currently only one tool: regularly checks the size of the TYPO3 database. 
+Currently there are two checks available:
+This TYPO3 extension checks the size of all database tables and/or the size of all log files at regular intervals.
 On exceeding a certain size, a mail is sent.
+
+There is a separate scheduler task for each check.
 
 .. _screenshots:
 
