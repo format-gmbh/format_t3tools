@@ -4,7 +4,7 @@
 		<header/>
 		<body>
             <trans-unit id="tasks.dbcheck.name">
-                <target>Datenbank-Größe-Check</target>
+                <target>Prüfung der Datenbank-Größe</target>
             </trans-unit>
             <trans-unit id="tasks.dbcheck.description">
                 <target>Dieser Task überprüft die Größe der Datenbank und schickt bei Überschreiten einer vorgegebenen Größe eine Mail.</target>
