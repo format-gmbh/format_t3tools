@@ -37,8 +37,11 @@
             <trans-unit id="tasks.logsizecheck.email.subject">
                 <target>%s: Größe aller Log-Dateien</target>
             </trans-unit>
-            <trans-unit id="tasks.">
-                <target></target>
+            <trans-unit id="tasks.validate.maxLogSize">
+                <target>Größe aller Log-Dateien (in MByte), ab der eine eMail versendet wird.</target>
+            </trans-unit>
+            <trans-unit id="tasks.validate.maxLogSize.invalid">
+                <target>Größe aller Log-Dateien muß größer 0 sein.</target>
             </trans-unit>
 		</body>
 	</file>

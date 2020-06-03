@@ -27,9 +27,6 @@
 			<trans-unit id="tasks.validate.maxDbSize.invalid">
 				<source>The size of the database must be greater than 0.</source>
 			</trans-unit>
-			<trans-unit id="tasks.">
-				<source></source>
-			</trans-unit>
 
 			<trans-unit id="tasks.logsizecheck.name">
 				<source>Log files size check</source>
@@ -39,6 +36,12 @@
 			</trans-unit>
 			<trans-unit id="tasks.logsizecheck.email.subject">
 				<source>%s: size of all log-files</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.maxLogSize">
+				<source>Size of the log files (in MByte) from which an email is sent.</source>
+			</trans-unit>
+			<trans-unit id="tasks.validate.maxLogSize.invalid">
+				<source>The size of the log files must be greater than 0.</source>
 			</trans-unit>
 
 		</body>
