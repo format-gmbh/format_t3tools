@@ -62,7 +62,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	function execute() {
 		
         $gesamt = 0;
-        $dirname = Environment::getPublicPath() . '/typo3temp/var/log';
+        $dirname = Environment::getVarPath() . '/log';
 
         if (!is_dir($dirname)) {
             $this->sendNotificationEmail("The file $dirname does not exists", []);;
