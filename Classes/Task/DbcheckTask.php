@@ -153,7 +153,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
 
-        if ($versionInformation->getMajorVersion() === 10) {
+        if ($versionInformation->getMajorVersion() >= 10) {
             $mail->setFrom($from)->setSubject($subject)->text($message);
         } else {
             $mail->setFrom($from)->setSubject($subject)->setBody($message);

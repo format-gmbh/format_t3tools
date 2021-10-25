@@ -1,7 +1,7 @@
 {
 	"name": "formatsoft/format_t3tools",
 	"type": "typo3-cms-extension",
-	"description": "Regularly checks the size of the TYPO3 database. On exceeding a certain size, a mail is sent.",
+	"description": "This TYPO3 extension checks the size of all database tables and/or the size of all log files at regular intervals. If a certain size is exceeded, a mail can be sent. There is a separate scheduler task for each check.",
 	"license": "GPL-2.0-or-later",
 	"keywords": ["typo3", "TYPO3 CMS", "database", "check", "size", "monitoring"],
 	"homepage": "https://github.com/format-gmbh/format_t3tools",
@@ -18,7 +18,7 @@
 		"source": "https://github.com/format-gmbh/format_t3tools"
 	},
 	"require": {
-		"typo3/cms-core": "^9.5.16|| ^10.4"
+		"typo3/cms-core": "^9.5 || ^10.4 || ^11.5"
 	},
 	"autoload": {
 		"psr-4": {
