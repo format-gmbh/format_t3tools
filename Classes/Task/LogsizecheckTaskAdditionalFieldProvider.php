@@ -24,17 +24,17 @@ use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 
 /**
  * This class provides Scheduler Additional Field plugin implementation
- * 
+ *
  */
 class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider {
-    
+
     /**
      * Default language file of the extension
      *
      * @var string
      */
     protected $languageFile = 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf';
-    
+
 	/**
 	 * Additional fields
 	 *
@@ -56,10 +56,12 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
         $additionalFields = [];
         $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
         $lang = $this->getLanguageService();
-        
+
         if (empty($taskInfo['notificationEmail'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['notificationEmail'] = $taskInfo['logsizecheck']['notificationEmail'];
+                if (isset($taskInfo['logsizecheck']) && isset($taskInfo['logsizecheck']['notificationEmail'])) {
+                    $taskInfo['notificationEmail'] = $taskInfo['logsizecheck']['notificationEmail'];
+                }
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
             } else {
@@ -69,7 +71,9 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
 
         if (empty($taskInfo['maxLogSize'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['maxLogSize'] = $taskInfo['logsizecheck']['maxLogSize'];
+                if (isset($taskInfo['logsizecheck']) && isset($taskInfo['logsizecheck']['maxLogSize'])) {
+                    $taskInfo['maxLogSize'] = $taskInfo['logsizecheck']['maxLogSize'];
+                }
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
                 $taskInfo['maxLogSize'] = $task->getMaxLogSize();
             } else {
@@ -79,11 +83,12 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
 
 		foreach ($this->fields as $field) {
             $fieldId = 'task_'.$field;
+            $fieldValue = $taskInfo[$field] ?? '';
             $fieldCode = '<input class="form-control" type="text"  name="tx_scheduler[logsizecheck]['.$field.']" '
             . 'id="'
             . $fieldId
             . '" value="'
-            . htmlspecialchars($taskInfo[$field])
+            . htmlspecialchars($fieldValue)
             . '">';
             $label = $lang->sL($this->languageFile . ':tasks.validate.'.$field);
             $label = BackendUtility::wrapInHelp('logsizecheck', $fieldId, $label);
@@ -92,12 +97,12 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
                 'label' => $label
             ];
         }
-        
+
         return $additionalFields;
     }
-    
-    
-    
+
+
+
     /**
      * This method checks any additional data that is relevant to the specific task.
      * If the task class is not relevant, the method is expected to return TRUE.
@@ -135,9 +140,9 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
         }
         return $isValid;
     }
-    
-    
-    
+
+
+
     /**
      * This method is used to save any additional input into the current task object
      * if the task class matches.
@@ -159,5 +164,5 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
     {
         return $GLOBALS['LANG'] ?? null;
     }
-    
+
 }

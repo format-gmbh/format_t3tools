@@ -1,3 +1,6 @@
+2021-10-01 Andreas Kessel  <typo3-dev@formatsoft.de>
+	* 2.2.5 bug fix release: undefined array key
+
 2021-01-16 Andreas Kessel  <typo3-dev@formatsoft.de>
 	* 2.2.3 bug fix release: used wrong folder of log files in composer mode
 

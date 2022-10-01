@@ -24,17 +24,17 @@ use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 
 /**
  * This class provides Scheduler Additional Field plugin implementation
- * 
+ *
  */
 class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider {
-    
+
     /**
      * Default language file of the extension
      *
      * @var string
      */
     protected $languageFile = 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf';
-    
+
 	/**
 	 * Additional fields
 	 *
@@ -56,10 +56,12 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
         $additionalFields = [];
         $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
         $lang = $this->getLanguageService();
-        
+
         if (empty($taskInfo['notificationEmail'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['notificationEmail'] = $taskInfo['dbcheck']['notificationEmail'];
+                if (isset($taskInfo['dbcheck']) && isset($taskInfo['dbcheck']['notificationEmail'])) {
+                    $taskInfo['notificationEmail'] = $taskInfo['dbcheck']['notificationEmail'];
+                }
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
             } else {
@@ -69,7 +71,9 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
 
         if (empty($taskInfo['maxDbSize'])) {
             if ($currentSchedulerModuleAction->equals(Action::ADD)) {
-                $taskInfo['maxDbSize'] = $taskInfo['dbcheck']['maxDbSize'];
+                if (isset($taskInfo['dbcheck']) && isset($taskInfo['dbcheck']['maxDbSize'])) {
+                    $taskInfo['maxDbSize'] = $taskInfo['dbcheck']['maxDbSize'];
+                }
             } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
                 $taskInfo['maxDbSize'] = $task->getMaxDbSize();
             } else {
@@ -79,11 +83,12 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
 
 		foreach ($this->fields as $field) {
             $fieldId = 'task_'.$field;
+            $fieldValue = $taskInfo[$field] ?? '';
             $fieldCode = '<input class="form-control" type="text"  name="tx_scheduler[dbcheck]['.$field.']" '
             . 'id="'
             . $fieldId
             . '" value="'
-            . htmlspecialchars($taskInfo[$field])
+            . htmlspecialchars($fieldValue)
             . '">';
             $label = $lang->sL($this->languageFile . ':tasks.validate.'.$field);
             $label = BackendUtility::wrapInHelp('dbcheck', $fieldId, $label);
@@ -92,12 +97,12 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
                 'label' => $label
             ];
         }
-        
+
         return $additionalFields;
     }
-    
-    
-    
+
+
+
     /**
      * This method checks any additional data that is relevant to the specific task.
      * If the task class is not relevant, the method is expected to return TRUE.
@@ -135,9 +140,9 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
         }
         return $isValid;
     }
-    
-    
-    
+
+
+
     /**
      * This method is used to save any additional input into the current task object
      * if the task class matches.
@@ -159,5 +164,5 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
     {
         return $GLOBALS['LANG'] ?? null;
     }
-    
+
 }
