@@ -15,7 +15,7 @@ namespace Formatsoft\FormatT3tools\Task;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
@@ -91,10 +91,11 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
             . htmlspecialchars($fieldValue)
             . '">';
             $label = $lang->sL($this->languageFile . ':tasks.validate.'.$field);
-            $label = BackendUtility::wrapInHelp('logsizecheck', $fieldId, $label);
             $additionalFields[$fieldId] = [
                 'code' => $fieldCode,
-                'label' => $label
+                'label' => $label,
+                'cshKey' => '',
+                'cshLabel' => $fieldId,
             ];
         }
 
@@ -125,7 +126,7 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
                     $isValid = false;
                     $this->addMessage(
                         $lang->sL($this->languageFile . ':tasks.validate.notificationEmail.invalid'),
-                        FlashMessage::ERROR
+                        ContextualFeedbackSeverity::ERROR
                     );
                 }
             }
@@ -135,7 +136,7 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
             $isValid = false;
             $this->addMessage(
                 $lang->sL($this->languageFile . ':tasks.validate.maxLogSize.invalid'),
-                FlashMessage::ERROR
+                ContextualFeedbackSeverity::ERROR
             );
         }
         return $isValid;
