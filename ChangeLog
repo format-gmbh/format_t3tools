@@ -1,3 +1,6 @@
+2023-04-02 Andreas Kessel  <typo3-dev@formatsoft.de>
+	* 3.0.1 corrected required TYPO3 version (for non-composer installations)
+
 2023-03-26 Andreas Kessel  <typo3-dev@formatsoft.de>
 	* 3.0.0 upgrade to TYPO3 12.2
 
