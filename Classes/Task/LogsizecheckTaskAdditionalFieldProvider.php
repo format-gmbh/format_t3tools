@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
+use TYPO3\CMS\Scheduler\SchedulerManagementAction;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 
@@ -58,11 +59,11 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
         $lang = $this->getLanguageService();
 
         if (empty($taskInfo['notificationEmail'])) {
-            if ($currentSchedulerModuleAction->equals(Action::ADD)) {
+            if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 if (isset($taskInfo['logsizecheck']) && isset($taskInfo['logsizecheck']['notificationEmail'])) {
                     $taskInfo['notificationEmail'] = $taskInfo['logsizecheck']['notificationEmail'];
                 }
-            } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
+            } elseif ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
             } else {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
@@ -70,11 +71,11 @@ class LogsizecheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldPro
         }
 
         if (empty($taskInfo['maxLogSize'])) {
-            if ($currentSchedulerModuleAction->equals(Action::ADD)) {
+            if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 if (isset($taskInfo['logsizecheck']) && isset($taskInfo['logsizecheck']['maxLogSize'])) {
                     $taskInfo['maxLogSize'] = $taskInfo['logsizecheck']['maxLogSize'];
                 }
-            } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
+            } elseif ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
                 $taskInfo['maxLogSize'] = $task->getMaxLogSize();
             } else {
                 $taskInfo['maxLogSize'] = $task->getMaxLogSize();

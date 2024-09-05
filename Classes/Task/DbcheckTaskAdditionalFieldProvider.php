@@ -13,12 +13,12 @@ namespace Formatsoft\FormatT3tools\Task;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
+use TYPO3\CMS\Scheduler\SchedulerManagementAction;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
 
@@ -58,11 +58,11 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
         $lang = $this->getLanguageService();
 
         if (empty($taskInfo['notificationEmail'])) {
-            if ($currentSchedulerModuleAction->equals(Action::ADD)) {
+            if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 if (isset($taskInfo['dbcheck']) && isset($taskInfo['dbcheck']['notificationEmail'])) {
                     $taskInfo['notificationEmail'] = $taskInfo['dbcheck']['notificationEmail'];
                 }
-            } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
+            } elseif ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
             } else {
                 $taskInfo['notificationEmail'] = $task->getNotificationEmail();
@@ -70,11 +70,11 @@ class DbcheckTaskAdditionalFieldProvider extends AbstractAdditionalFieldProvider
         }
 
         if (empty($taskInfo['maxDbSize'])) {
-            if ($currentSchedulerModuleAction->equals(Action::ADD)) {
+            if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 if (isset($taskInfo['dbcheck']) && isset($taskInfo['dbcheck']['maxDbSize'])) {
                     $taskInfo['maxDbSize'] = $taskInfo['dbcheck']['maxDbSize'];
                 }
-            } elseif ($currentSchedulerModuleAction->equals(Action::EDIT)) {
+            } elseif ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
                 $taskInfo['maxDbSize'] = $task->getMaxDbSize();
             } else {
                 $taskInfo['maxDbSize'] = $task->getMaxDbSize();

@@ -13,6 +13,8 @@ namespace Formatsoft\FormatT3tools\Task;
  * The TYPO3 project - inspiring people to share!
  */
 
+use Doctrine\DBAL\Exception;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -48,23 +50,22 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @var int
      */
 	protected $maxDbSize = 1;
-    
-
-    
 
 
-	/**
-	 * Function executed from scheduler. Sends a mail when the database size has been exceeded.
-	 * 
+    /**
+     * Function executed from scheduler. Sends a mail when the database size has been exceeded.
+     *
      * @return bool TRUE on successful execution, FALSE on error
-	 */
+     * @throws Exception
+     */
 	function execute() {
 		
         $gesamt = 0;
+        /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionByName('Default');
-        $statement = $connection->query('SHOW TABLE STATUS');
+        $result = $connection->executeQuery('SHOW TABLE STATUS');
         
-        while ($row = $statement->fetch()) {
+        while ($row = $result->fetchAssociative()) {
             $summe = $row["Index_length"] + $row["Data_length"];
             $gesamt += $summe;
         }

@@ -3,7 +3,7 @@ $EM_CONF[$_EXTKEY] = [
 	'title' => 'Tools for your TYPO3 installation',
 	'description' => 'This TYPO3 extension checks the size of all database tables and/or the size of all log files at regular intervals. If a certain size is exceeded, a mail can be sent. There is a separate scheduler task for each check.',
 	'category' => 'be',
-	'version' => '3.0.1',
+	'version' => '13.0.0',
 	'author' => 'Andreas Kessel',
 	'author_email' => 'typo3-dev@formatsoft.de',
 	'author_company' => 'format Software Gmbh (www.formatsoft.de)',
@@ -13,7 +13,7 @@ $EM_CONF[$_EXTKEY] = [
 	'clearCacheOnLoad' => 0,
 	'constraints' => [
 		'depends' => [
-			'typo3' => '12.2.0-12.4.99',
+			'typo3' => '13.2.0-13.4.99',
             'scheduler' => ''
 		],
         'conflicts' => [],
