@@ -19,7 +19,7 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-
+use TYPO3\CMS\Core\Mail\MailerInterface;
 /**
 * Class tx_formatt3tools_dbcheck
 *
@@ -35,7 +35,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @var string
      */
     protected $languageFile = 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf';
-    
+
 	/**
 	 * Email address to send email notification to in case we find problems with
 	 * the system.
@@ -43,7 +43,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 * @var	string
 	 */
 	protected $notificationEmail = NULL;
-    
+
     /**
      * Size of the database at which a mail is to be sent.
      *
@@ -59,12 +59,12 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @throws Exception
      */
 	function execute() {
-		
+
         $gesamt = 0;
         /** @var Connection $connection */
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionByName('Default');
         $result = $connection->executeQuery('SHOW TABLE STATUS');
-        
+
         while ($row = $result->fetchAssociative()) {
             $summe = $row["Index_length"] + $row["Data_length"];
             $gesamt += $summe;
@@ -74,7 +74,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
         if($gesamtMByte > $this->getMaxDbSize()){
           $this->sendNotificationEmail($gesamtMByte.' MByte');
-        } 
+        }
 
 		return true;
 	}
@@ -89,8 +89,8 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	public function getNotificationEmail() {
 		return $this->notificationEmail;
 	}
-	
-	
+
+
 	/**
 	 * Gets the maxDbSize.
 	 *
@@ -99,10 +99,10 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	public function getMaxDbSize() {
 		return intval($this->maxDbSize);
 	}
-	
-	
-	
-	
+
+
+
+
 
 	/**
 	 * Sets the notification email address.
@@ -117,7 +117,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	/**
 	 * Sets the maxDbSize.
 	 *
-	 * @param	int	$maxDbSize 
+	 * @param	int	$maxDbSize
 	 */
 	public function setMaxDbSize($maxDbSize) {
 		$this->maxDbSize = (int)$maxDbSize;
@@ -150,9 +150,12 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 		$message.= CRLF . CRLF;
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
-        
+
         /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
+
+        /** @var MailerInterface $mailerInterface */
+        $mailerInterface = GeneralUtility::makeInstance(MailerInterface::class);
 
         if ($versionInformation->getMajorVersion() >= 10) {
             $mail->setFrom($from)->setSubject($subject)->text($message);
@@ -163,11 +166,11 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 		$arrAdr = explode(',', $this->getNotificationEmail());
 		foreach($arrAdr as $adr){
             $mail->setTo($adr);
-            $mail->send();
+            $mailerInterface->send($mail);
         }
 	}
 
-    
+
     /**
      * Returns the most important properties of the task as a
      * slash separated string that will be displayed in the scheduler module.

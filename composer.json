@@ -18,7 +18,7 @@
 		"source": "https://github.com/format-gmbh/format_t3tools"
 	},
 	"require": {
-		"typo3/cms-core": "^13.2",
+		"typo3/cms-core": "^14",
 		"typo3/cms-scheduler": "*"
 	},
 	"autoload": {

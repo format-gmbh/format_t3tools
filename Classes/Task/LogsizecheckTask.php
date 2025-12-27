@@ -16,8 +16,8 @@ namespace Formatsoft\FormatT3tools\Task;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Mail\MailerInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 
 /**
 * Class tx_formatt3tools_dbcheck
@@ -34,7 +34,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @var string
      */
     protected $languageFile = 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf';
-    
+
 	/**
 	 * Email address to send email notification to in case we find problems with
 	 * the system.
@@ -42,25 +42,25 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 * @var	string
 	 */
 	protected $notificationEmail = NULL;
-    
+
     /**
      * Size of the database at which a mail is to be sent.
      *
      * @var int
      */
 	protected $maxLogSize = 1;
-    
 
-    
+
+
 
 
 	/**
 	 * Function executed from scheduler. Sends a mail when the database size has been exceeded.
-	 * 
+	 *
      * @return bool TRUE on successful execution, FALSE on error
 	 */
 	function execute() {
-		
+
         $gesamt = 0;
         $dirname = Environment::getVarPath() . '/log';
 
@@ -84,7 +84,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
         if($gesamtMByte > $this->getMaxLogSize()){
           $this->sendNotificationEmail($gesamtMByte.' MByte', $arrFileinfo);
-        } 
+        }
 
 		return true;
 	}
@@ -100,8 +100,8 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
     {
 		return $this->notificationEmail;
 	}
-	
-	
+
+
 	/**
 	 * Gets the maxLogSize.
 	 *
@@ -111,10 +111,10 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
     {
 		return (int)$this->maxLogSize;
 	}
-	
-	
-	
-	
+
+
+
+
 
 	/**
 	 * Sets the notification email address.
@@ -172,9 +172,12 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         $message.= CRLF . CRLF;
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
-        
+
         /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
+
+        /** @var MailerInterface $mailerInterface */
+        $mailerInterface = GeneralUtility::makeInstance(MailerInterface::class);
 
         if ($versionInformation->getMajorVersion() >= 10) {
             $mail->setFrom($from)->setSubject($subject)->text($message);
@@ -185,11 +188,11 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 		$arrAdr = explode(',', $this->getNotificationEmail());
 		foreach($arrAdr as $adr){
             $mail->setTo($adr);
-            $mail->send();
+            $mailerInterface->send($mail);
         }
 	}
 
-    
+
     /**
      * Returns the most important properties of the task as a
      * slash separated string that will be displayed in the scheduler module.
