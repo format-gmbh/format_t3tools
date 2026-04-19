@@ -14,12 +14,17 @@ namespace Formatsoft\FormatT3tools\Task;
  */
 
 use Doctrine\DBAL\Exception;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mime\Address;
 use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Mail\MailerInterface;
+use TYPO3\CMS\Scheduler\Task\AbstractTask;
+
 /**
 * Class tx_formatt3tools_dbcheck
 *
@@ -27,7 +32,7 @@ use TYPO3\CMS\Core\Mail\MailerInterface;
 * @package  TYPO3
 * @subpackage	tx_formatt3tools
 */
-class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
+class DbcheckTask extends AbstractTask {
 
     /**
      * Default language file of the extension
@@ -49,7 +54,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      *
      * @var int
      */
-	protected $maxDbSize = 1;
+	protected int $maxDbSize = 1;
 
 
     /**
@@ -58,7 +63,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @return bool TRUE on successful execution, FALSE on error
      * @throws Exception
      */
-	function execute() {
+	public function execute() {
 
         $gesamt = 0;
         /** @var Connection $connection */
@@ -96,8 +101,9 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @return	int	maxDbSize.
 	 */
-	public function getMaxDbSize() {
-		return intval($this->maxDbSize);
+	public function getMaxDbSize(): int
+    {
+		return $this->maxDbSize;
 	}
 
 
@@ -109,7 +115,7 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @param	string	$notificationEmail Notification email address.
 	 */
-	public function setNotificationEmail($notificationEmail) {
+	public function setNotificationEmail(string $notificationEmail): void {
 		$this->notificationEmail = $notificationEmail;
 	}
 
@@ -119,31 +125,27 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @param	int	$maxDbSize
 	 */
-	public function setMaxDbSize($maxDbSize) {
-		$this->maxDbSize = (int)$maxDbSize;
+	public function setMaxDbSize(int $maxDbSize): void {
+		$this->maxDbSize = $maxDbSize;
 	}
-
-
-
 
 
     /**
      * Sends a notification email, reporting size of database
      *
      * @param string $groesse
+     * @throws TransportExceptionInterface
      */
-	protected function sendNotificationEmail($groesse) {
-
-        $versionInformation = GeneralUtility::makeInstance(Typo3Version::class);
+	protected function sendNotificationEmail(string $groesse): void {
 
 		$subject = sprintf(
-            $this->getLanguageService()->sL($this->languageFile . ':tasks.email.subject'),
+            $this->getLanguageService()?->sL($this->languageFile . ':tasks.email.subject') ?? '',
 			$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']
 		);
 		$subject.= ': '.$groesse;
 
 		$message = sprintf(
-			$this->getLanguageService()->sL($this->languageFile . ':tasks.email.message'),
+			$this->getLanguageService()?->sL($this->languageFile . ':tasks.email.message') ?? '',
 			'',
 			''
 		);
@@ -151,21 +153,19 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
 
-        /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
 
         /** @var MailerInterface $mailerInterface */
         $mailerInterface = GeneralUtility::makeInstance(MailerInterface::class);
 
-        if ($versionInformation->getMajorVersion() >= 10) {
-            $mail->setFrom($from)->setSubject($subject)->text($message);
-        } else {
-            $mail->setFrom($from)->setSubject($subject)->setBody($message);
-        }
+        $mail->setFrom($from)->setSubject($subject)->text($message);
 
-		$arrAdr = explode(',', $this->getNotificationEmail());
+		$arrAdr = GeneralUtility::trimExplode(',', $this->getNotificationEmail(), true);
 		foreach($arrAdr as $adr){
-            $mail->setTo($adr);
+            GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
+                GeneralUtility::makeInstance(FlashMessage::class, $adr, '', ContextualFeedbackSeverity::INFO)
+            );
+            $mail->setTo([new Address($adr)]);
             $mailerInterface->send($mail);
         }
 	}
@@ -187,14 +187,40 @@ class DbcheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
     }
 
 
-
-    /**
-     * @return LanguageService|null
-     */
-    protected function getLanguageService(): ?LanguageService
+    /** @return array<string, mixed> */
+    public function getTaskParameters(): array
     {
-        return $GLOBALS['LANG'] ?? null;
+        return [
+            'notificationEmail' => $this->notificationEmail,
+            'maxDbSize' => $this->maxDbSize,
+        ];
     }
 
+    /** @param array<array-key, mixed> $parameters */
+    public function setTaskParameters(array $parameters): void
+    {
+        $this->notificationEmail = $parameters['notificationEmail'] ?? '';
+        $this->maxDbSize = (int)($parameters['maxDbSize'] ?? 1);
+    }
+
+    /** @param array<string, mixed> $parameters */
+    public function validateTaskParameters(array $parameters): bool
+    {
+        $validInput = true;
+        $notificationEmails = GeneralUtility::trimExplode(',', $parameters['notificationEmail'] ?? '', true);
+        foreach ($notificationEmails as $notificationEmail) {
+            if (!GeneralUtility::validEmail($notificationEmail)) {
+                $validInput = false;
+                break;
+            }
+        }
+        if (!$validInput || ($parameters['notificationEmail'] ?? '') === '') {
+            GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
+                GeneralUtility::makeInstance(FlashMessage::class, $this->getLanguageService()?->sL($this->languageFile . ':tasks.validate.notificationEmail.invalid') ?? '', '', ContextualFeedbackSeverity::ERROR)
+            );
+            $validInput = false;
+        }
+        return $validInput;
+    }
 }
 

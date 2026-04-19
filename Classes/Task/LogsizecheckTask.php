@@ -15,8 +15,10 @@ namespace Formatsoft\FormatT3tools\Task;
 
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Mail\MailerInterface;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -72,7 +74,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
         $arrLogfiles = array_diff(scandir($dirname), ['..', '.']);
         $arrFileinfo = [];
         foreach ($arrLogfiles as $logfile) {
-            $size = filesize($dirname . '/' . $logfile);
+            $size = (int)filesize($dirname . '/' . $logfile);
             $gesamt += $size;
             $arrFileinfo[] = [
                 'name' => $logfile,
@@ -109,7 +111,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 */
 	public function getMaxLogSize(): int
     {
-		return (int)$this->maxLogSize;
+		return $this->maxLogSize;
 	}
 
 
@@ -121,7 +123,7 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @param	string	$notificationEmail Notification email address.
 	 */
-	public function setNotificationEmail($notificationEmail) {
+	public function setNotificationEmail(string $notificationEmail): void {
 		$this->notificationEmail = $notificationEmail;
 	}
 
@@ -131,8 +133,8 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 *
 	 * @param	int	$maxLogSize
 	 */
-	public function setMaxLogSize($maxLogSize) {
-		$this->maxLogSize = (int)$maxLogSize;
+	public function setMaxLogSize(int $maxLogSize): void {
+		$this->maxLogSize = $maxLogSize;
 	}
 
 
@@ -145,27 +147,24 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
      * @param string $groesse Gesamtgröße aller Log-Files
      * @param array $arrFileinfo Array mit Dateinamen und Größen
 	 */
-	protected function sendNotificationEmail($groesse, $arrFileinfo) {
-
-        $versionInformation = GeneralUtility::makeInstance(Typo3Version::class);
+	/** @param array<array-key, mixed> $arrFileinfo */
+	protected function sendNotificationEmail(string $groesse, array $arrFileinfo): void {
 
 		$subject = sprintf(
-            $this->getLanguageService()->sL($this->languageFile . ':tasks.logsizecheck.email.subject'),
+            $this->getLanguageService()?->sL($this->languageFile . ':tasks.logsizecheck.email.subject') ?? '',
 			$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']
 		);
 		$subject.= ': '.$groesse;
 
 		$message = sprintf(
-			$this->getLanguageService()->sL($this->languageFile . ':tasks.email.message'),
+			$this->getLanguageService()?->sL($this->languageFile . ':tasks.email.message') ?? '',
 			'',
 			''
 		);
 		$message.= CRLF . CRLF;
 		foreach ($arrFileinfo as $file) {
 		    if($file['name'] !== '.htaccess') {
-		        // Only send shortened file names by mail.
                 $message.= substr($file['name'], 0 , 9) . '..... ';
-                // Size of the file in MByte
                 $message.= round($file['size'] / (1024 * 1024),1) . ' MB'. CRLF;
             }
         }
@@ -173,19 +172,12 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 
 		$from =  $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
 
-        /** @var $mail \TYPO3\CMS\Core\Mail\MailMessage */
         $mail = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
-
-        /** @var MailerInterface $mailerInterface */
         $mailerInterface = GeneralUtility::makeInstance(MailerInterface::class);
 
-        if ($versionInformation->getMajorVersion() >= 10) {
-            $mail->setFrom($from)->setSubject($subject)->text($message);
-        } else {
-            $mail->setFrom($from)->setSubject($subject)->setBody($message);
-        }
+        $mail->setFrom($from)->setSubject($subject)->text($message);
 
-		$arrAdr = explode(',', $this->getNotificationEmail());
+		$arrAdr = GeneralUtility::trimExplode(',', $this->getNotificationEmail() ?? '', true);
 		foreach($arrAdr as $adr){
             $mail->setTo($adr);
             $mailerInterface->send($mail);
@@ -209,6 +201,48 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
     }
 
 
+
+    /** @return array<string, mixed> */
+    public function getTaskParameters(): array
+    {
+        return [
+            'notificationEmail' => $this->notificationEmail,
+            'maxLogSize' => $this->maxLogSize,
+        ];
+    }
+
+    /** @param array<array-key, mixed> $parameters */
+    public function setTaskParameters(array $parameters): void
+    {
+        $this->notificationEmail = $parameters['notificationEmail'] ?? '';
+        $this->maxLogSize = (int)($parameters['maxLogSize'] ?? 1);
+    }
+
+    /** @param array<string, mixed> $parameters */
+    public function validateTaskParameters(array $parameters): bool
+    {
+        $validInput = true;
+        $notificationEmails = GeneralUtility::trimExplode(',', $parameters['notificationEmail'] ?? '', true);
+        foreach ($notificationEmails as $notificationEmail) {
+            if (!GeneralUtility::validEmail($notificationEmail)) {
+                $validInput = false;
+                break;
+            }
+        }
+        if (!$validInput || ($parameters['notificationEmail'] ?? '') === '') {
+            GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
+                GeneralUtility::makeInstance(FlashMessage::class, $this->getLanguageService()?->sL($this->languageFile . ':tasks.validate.notificationEmail.invalid') ?? '', '', ContextualFeedbackSeverity::ERROR)
+            );
+            $validInput = false;
+        }
+        if ((int)($parameters['maxLogSize'] ?? 0) <= 0) {
+            GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
+                GeneralUtility::makeInstance(FlashMessage::class, $this->getLanguageService()?->sL($this->languageFile . ':tasks.validate.maxLogSize.invalid') ?? '', '', ContextualFeedbackSeverity::ERROR)
+            );
+            $validInput = false;
+        }
+        return $validInput;
+    }
 
     /**
      * @return LanguageService|null
