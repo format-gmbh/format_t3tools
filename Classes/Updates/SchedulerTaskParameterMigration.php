@@ -31,7 +31,7 @@ class SchedulerTaskParameterMigration implements UpgradeWizardInterface
 
         $count = (int)$connection->executeQuery(
             "SELECT COUNT(*) FROM tx_scheduler_task
-             WHERE classname IN (?, ?)
+             WHERE tasktype IN (?, ?)
                AND (notificationEmail = '' OR notificationEmail IS NULL)
                AND serialized_task_object != ''",
             [DbcheckTask::class, LogsizecheckTask::class]
@@ -46,8 +46,8 @@ class SchedulerTaskParameterMigration implements UpgradeWizardInterface
             ->getConnectionForTable('tx_scheduler_task');
 
         $rows = $connection->executeQuery(
-            "SELECT uid, classname, serialized_task_object FROM tx_scheduler_task
-             WHERE classname IN (?, ?)
+            "SELECT uid, tasktype, serialized_task_object FROM tx_scheduler_task
+             WHERE tasktype IN (?, ?)
                AND (notificationEmail = '' OR notificationEmail IS NULL)
                AND serialized_task_object != ''",
             [DbcheckTask::class, LogsizecheckTask::class]
