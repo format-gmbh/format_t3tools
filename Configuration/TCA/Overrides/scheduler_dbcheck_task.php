@@ -8,7 +8,7 @@ if (isset($GLOBALS['TCA']['tx_scheduler_task'])) {
     ExtensionManagementUtility::addTCAcolumns(
         'tx_scheduler_task',
         [
-            'notificationEmail' => [
+            'tx_formatt3tools_notification_email' => [
                 'label' => 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf:tasks.validate.notificationEmail',
                 'config' => [
                     'type' => 'input',
@@ -18,12 +18,12 @@ if (isset($GLOBALS['TCA']['tx_scheduler_task'])) {
                     'placeholder' => 'support@myDomain.com',
                 ],
             ],
-            'maxDbSize' => [
+            'tx_formatt3tools_max_db_size' => [
                 'label' => 'LLL:EXT:format_t3tools/Resources/Private/Language/locallang.xlf:tasks.validate.maxDbSize',
                 'config' => [
                     'type' => 'number',
                     'required' => true,
-                    'default' => '1',
+                    'default' => 1,
                     'range' => [
                         'lower' => 1,
                     ],
@@ -46,8 +46,8 @@ if (isset($GLOBALS['TCA']['tx_scheduler_task'])) {
                 tasktype,
                 task_group,
                 description,
-                notificationEmail,
-                maxDbSize,
+                tx_formatt3tools_notification_email,
+                tx_formatt3tools_max_db_size,
             --div--;scheduler.messages:scheduler.form.palettes.timing,
                 execution_details,
                 nextexecution,

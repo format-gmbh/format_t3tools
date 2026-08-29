@@ -206,36 +206,43 @@ class LogsizecheckTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
     public function getTaskParameters(): array
     {
         return [
-            'notificationEmail' => $this->notificationEmail,
-            'maxLogSize' => $this->maxLogSize,
+            'tx_formatt3tools_notification_email' => $this->notificationEmail,
+            'tx_formatt3tools_max_log_size' => $this->maxLogSize,
         ];
     }
 
-    /** @param array<array-key, mixed> $parameters */
+    /**
+     * The array keys are the TCA column names. The unprefixed keys are the ones used by
+     * format_t3tools up to and including 14.0 and are kept as a fallback for tasks that
+     * have not been migrated by the upgrade wizard yet.
+     *
+     * @param array<array-key, mixed> $parameters
+     */
     public function setTaskParameters(array $parameters): void
     {
-        $this->notificationEmail = $parameters['notificationEmail'] ?? '';
-        $this->maxLogSize = (int)($parameters['maxLogSize'] ?? 1);
+        $this->notificationEmail = (string)($parameters['tx_formatt3tools_notification_email'] ?? $parameters['notificationEmail'] ?? '');
+        $this->maxLogSize = (int)($parameters['tx_formatt3tools_max_log_size'] ?? $parameters['maxLogSize'] ?? 1);
     }
 
     /** @param array<string, mixed> $parameters */
     public function validateTaskParameters(array $parameters): bool
     {
         $validInput = true;
-        $notificationEmails = GeneralUtility::trimExplode(',', $parameters['notificationEmail'] ?? '', true);
+        $notificationEmailList = (string)($parameters['tx_formatt3tools_notification_email'] ?? '');
+        $notificationEmails = GeneralUtility::trimExplode(',', $notificationEmailList, true);
         foreach ($notificationEmails as $notificationEmail) {
             if (!GeneralUtility::validEmail($notificationEmail)) {
                 $validInput = false;
                 break;
             }
         }
-        if (!$validInput || ($parameters['notificationEmail'] ?? '') === '') {
+        if (!$validInput || $notificationEmailList === '') {
             GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
                 GeneralUtility::makeInstance(FlashMessage::class, $this->getLanguageService()?->sL($this->languageFile . ':tasks.validate.notificationEmail.invalid') ?? '', '', ContextualFeedbackSeverity::ERROR)
             );
             $validInput = false;
         }
-        if ((int)($parameters['maxLogSize'] ?? 0) <= 0) {
+        if ((int)($parameters['tx_formatt3tools_max_log_size'] ?? 0) <= 0) {
             GeneralUtility::makeInstance(FlashMessageService::class)->getMessageQueueByIdentifier()->addMessage(
                 GeneralUtility::makeInstance(FlashMessage::class, $this->getLanguageService()?->sL($this->languageFile . ':tasks.validate.maxLogSize.invalid') ?? '', '', ContextualFeedbackSeverity::ERROR)
             );
